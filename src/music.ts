@@ -18,7 +18,7 @@ export class ChristmasMusicPlayer {
     if (this.isInitialized) return;
     this.isInitialized = true;
 
-    this.audio = new Audio('/music.mp3');
+    this.audio = new Audio(`${import.meta.env.BASE_URL}music.mp3`);
     this.audio.loop = true;
     this.audio.volume = this.isMuted ? 0 : 0.3;
     this.audio.preload = 'auto';

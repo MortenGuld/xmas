@@ -27,7 +27,7 @@ export function generateAvatar(name: string): string {
     return `
       <div class="avatar-photo-wrapper">
         <img
-          src="/people/${imageFile}"
+          src="${import.meta.env.BASE_URL}people/${imageFile}"
           alt="${name}"
           class="avatar-photo"
           loading="eager"
