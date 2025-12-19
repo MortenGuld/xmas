@@ -20,7 +20,8 @@ const LEADER_NAMES: string[] = [
   "Morten",
   "Klaus",
   "Karolina",
-  "Pawel"
+  "Pawel",
+  "Maksymilian"
 ];
 
 // Game configuration

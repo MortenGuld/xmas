@@ -4,7 +4,7 @@ import type { Leader, GameStateData, GameConfig } from './types';
 export const DEFAULT_CONFIG: GameConfig = {
   maxFallingHats: 3,
   hatSpawnInterval: 2500,
-  leaderNames: ["Arne", "Michael", "Erling", "Kinga", "Lotte", "Morten", "Klaus", "Karolina", "Pawel"],
+  leaderNames: ["Arne", "Michael", "Erling", "Kinga", "Lotte", "Morten", "Klaus", "Karolina", "Pawel", "Maksymilian"],
   ornamentSpeed: 0.8,
   throwSpeed: 15
 };
