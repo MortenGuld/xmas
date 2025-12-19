@@ -4,6 +4,7 @@ import { OrnamentManager } from './ornamentManager';
 import { HatManager } from './hatManager';
 import { Snowfall } from './snowfall';
 import { AudioManager } from './audioManager';
+import { ChristmasMusicPlayer } from './music';
 import { createChristmasLights, createStars, createSparkleBurst, celebrateVictory, createAurora } from './effects';
 import type { GameConfig } from './types';
 import confetti from 'canvas-confetti';
@@ -44,6 +45,7 @@ class Game {
   private hatManager: HatManager;
   private snowfall: Snowfall;
   private audio: AudioManager;
+  private music: ChristmasMusicPlayer;
   private gameContainer: HTMLElement;
   private progressText: HTMLElement;
   private progressFill: HTMLElement;
@@ -60,6 +62,7 @@ class Game {
     this.hatManager = new HatManager(this.gameContainer, CONFIG);
     this.snowfall = new Snowfall(document.getElementById('snowfall-container')!);
     this.audio = new AudioManager();
+    this.music = new ChristmasMusicPlayer();
 
     this.setupEffects();
     this.setupCallbacks();
@@ -82,6 +85,7 @@ class Game {
     this.updateProgress();
     this.snowfall.start();
     this.hatManager.start();
+    this.music.start();
     this.updateMuteButton();
   }
 
@@ -178,6 +182,7 @@ class Game {
   private toggleMute(): void {
     const isMuted = this.gameState.toggleMute();
     this.audio.setMuted(isMuted);
+    this.music.setMuted(isMuted);
     this.updateMuteButton();
   }
 
@@ -203,7 +208,11 @@ class Game {
       if (!this.gameState.getInteracted()) {
         this.gameState.setInteracted();
         this.audio.init();
+        this.music.init();
         this.audio.setMuted(this.gameState.getMuted());
+        this.music.setMuted(this.gameState.getMuted());
+        // Explicitly start music after user interaction
+        this.music.start();
       }
     };
 
@@ -215,7 +224,9 @@ class Game {
   /** Handle victory */
   private onVictory(): void {
     this.hatManager.stop();
+    this.music.stop();
     this.audio.playVictory();
+    this.music.playVictoryJingle();
 
     setTimeout(() => {
       this.overlay.classList.add('visible');
@@ -233,6 +244,7 @@ class Game {
     this.ornamentManager.start();
     this.updateProgress();
     this.hatManager.start();
+    this.music.start();
     document.body.classList.remove('holding-hat');
   }
 }

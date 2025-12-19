@@ -1,63 +1,181 @@
-import { Howl } from 'howler';
+/**
+ * Christmas Sound Effects Manager
+ * Uses Web Audio API to create festive sounds
+ */
 
-/** Simple audio manager using embedded base64 sounds */
 export class AudioManager {
-  private pickupSound: Howl | null = null;
-  private placeSound: Howl | null = null;
-  private victorySound: Howl | null = null;
-  private isMuted: boolean = true;
+  private audioContext: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
+  private isMuted: boolean = false;
   private isInitialized: boolean = false;
 
   constructor() {
     // Sounds will be initialized on first user interaction
   }
 
-  /** Initialize sounds (call after user interaction) */
+  /** Initialize audio context (call after user interaction) */
   init(): void {
     if (this.isInitialized) return;
     this.isInitialized = true;
 
-    // Simple synthesized sounds using data URLs
-    // These are tiny placeholder sounds - in production you'd use real audio files
-    this.pickupSound = new Howl({
-      src: ['data:audio/wav;base64,UklGRl4BAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToBAAB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgH5+fn5+fn5/f39/gICAgICAgH9/f39/f39+fn5+fn5+f39/f4CAgICAgIB/f39/f39/fn5+fn5+fn9/f3+AgICAgICAgICAgH9/f35+fn5+fn5/f3+AgICAgICAgH9/f39/f39+fn5+f39/f4CAgICAgIB/f39/f39/fn5+fn5+fn9/f3+AgICAgICAgICAgH9/f35+fn5+fn5/f3+AgICAgICAf39/f39/f39+fn5+f39/gICAgICAgIB/f39/f39/fn5+fn5+fn9/f4CAgICAgICAgA=='],
-      volume: 0.3
-    });
-
-    this.placeSound = new Howl({
-      src: ['data:audio/wav;base64,UklGRooBAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YWYBAAB/f39/f39/f39/f4CAgICAgICBgYGBgYGBgoKCgoKCgoODg4ODg4OEhISEhISEhYWFhYWFhYaGhoaGhoaHh4eHh4eHiIiIiIiIiImJiYmJiYmJiYmJiYmJiYiIiIiIiIiHh4eHh4eHhoaGhoaGhoWFhYWFhYWEhISEhISEg4ODg4ODg4KCgoKCgoKBgYGBgYGBgICAgICAgH9/f39/f39+fn5+fn5+fX19fX19fXx8fHx8fHx7e3t7e3t7enp6enp6enl5eXl5eXl4eHh4eHh4d3d3d3d3d3Z2dnZ2dnZ1dXV1dXV1dXV1dXV1dXV2dnZ2dnZ2d3d3d3d3d3h4eHh4eHh5eXl5eXl5enp6enp6ent7e3t7e3t8fHx8fHx8fX19fX19fX5+fn5+fn5/f39/f39/gICAgICAgA=='],
-      volume: 0.4
-    });
-
-    this.victorySound = new Howl({
-      src: ['data:audio/wav;base64,UklGRsICAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YZ4CAABiYmJiY2NjY2RkZGRlZWVlZmZmZmdnZ2doaGhoaWlpaWpqampra2trbGxsbG1tbW1ubm5ub29vb3BwcHBxcXFxcnJycnNzc3N0dHR0dXV1dXZ2dnZ3d3d3eHh4eHl5eXl6enp6e3t7e3x8fHx9fX19fn5+fn9/f3+AgICAgYGBgYKCgoKDg4ODhISEhIWFhYWGhoaGh4eHh4iIiIiJiYmJioqKiouLi4uMjIyMjY2NjY6Ojo6Pj4+PkJCQkJGRkZGSkpKSk5OTk5SUlJSVlZWVlpaWlpeXl5eYmJiYmZmZmZqampqbm5ubnJycnJ2dnZ2enp6en5+fn6CgoKChoaGhoqKioqOjo6OkpKSkpaWlpaampqanp6enqKioqKmpqamqqqqrq6urrKysrK2tra2urq6ur6+vr7CwsLCxsbGxsrKysrOzs7O0tLS0tbW1tba2tra3t7e3uLi4uLm5ubm6urq6u7u7u7y8vLy9vb29vr6+vr+/v7/AwMDAwcHBwcLCwsLDw8PDxMTExMXFxcXGxsbGx8fHx8jIyMjJycnJysrKysvLy8vMzMzMzc3Nzc7Ozs7Pz8/P0NDQ0NHR0dHS0tLS09PT09TU1NTV1dXV1tbW1tfX19fY2NjY2dnZ2dra2trb29vb3Nzc3N3d3d3e3t7e39/f3+Dg4ODh4eHh4uLi4uPj4+Pk5OTk5eXl5ebm5ubn5+fn6Ojo6Onp6enq6urq6+vr6+zs7Ozt7e3t7u7u7u/v7+/w8PDw8fHx8fLy8vLz8/Pz9PT09PX19fX29vb29/f39/j4+Pj5+fn5+vr6+vv7+/v8/Pz8/f39/f7+/v7///8='],
-      volume: 0.5
-    });
+    this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    this.masterGain = this.audioContext.createGain();
+    this.masterGain.connect(this.audioContext.destination);
+    this.masterGain.gain.value = this.isMuted ? 0 : 0.25; // Lower overall volume
   }
 
   /** Set mute state */
   setMuted(muted: boolean): void {
     this.isMuted = muted;
+    if (this.masterGain) {
+      this.masterGain.gain.value = muted ? 0 : 0.25;
+    }
   }
 
-  /** Play pickup sound */
+  /** Play a soft "ho" sound - for picking up hat */
   playPickup(): void {
-    if (!this.isMuted && this.pickupSound) {
-      this.pickupSound.play();
-    }
+    if (this.isMuted || !this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Deep, warm "ho" sound
+    const osc = this.audioContext.createOscillator();
+    const gain = this.audioContext.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(120, now + 0.15);
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(now);
+    osc.stop(now + 0.25);
+
+    // Add soft sleigh bell shimmer
+    this.playSoftBell(now + 0.05, 0.04);
   }
 
-  /** Play place sound */
+  /** Play "ho ho" chime - for placing hat */
   playPlace(): void {
-    if (!this.isMuted && this.placeSound) {
-      this.placeSound.play();
+    if (this.isMuted || !this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Two "ho" sounds
+    [0, 0.15].forEach((delay, i) => {
+      const osc = this.audioContext!.createOscillator();
+      const gain = this.audioContext!.createGain();
+
+      osc.type = 'sine';
+      const baseFreq = i === 0 ? 160 : 140;
+      osc.frequency.setValueAtTime(baseFreq, now + delay);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.7, now + delay + 0.12);
+
+      gain.gain.setValueAtTime(0, now + delay);
+      gain.gain.linearRampToValueAtTime(0.1, now + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.18);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain!);
+
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.25);
+    });
+
+    // Warm chime on top
+    this.playWarmChime(now + 0.1, 0.06);
+  }
+
+  /** Play victory "ho ho ho" fanfare */
+  playVictory(): void {
+    if (this.isMuted || !this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Three jolly "ho ho ho" sounds
+    [0, 0.2, 0.4].forEach((delay, i) => {
+      const osc = this.audioContext!.createOscillator();
+      const gain = this.audioContext!.createGain();
+
+      osc.type = 'sine';
+      // Descending pitch for jolly effect
+      const baseFreq = 180 - i * 20;
+      osc.frequency.setValueAtTime(baseFreq, now + delay);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.65, now + delay + 0.15);
+
+      gain.gain.setValueAtTime(0, now + delay);
+      gain.gain.linearRampToValueAtTime(0.12, now + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.2);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain!);
+
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.3);
+    });
+
+    // Celebratory chimes
+    this.playWarmChime(now + 0.6, 0.08);
+    this.playWarmChime(now + 0.75, 0.08);
+    this.playWarmChime(now + 0.9, 0.1);
+
+    // Soft bells
+    for (let i = 0; i < 4; i++) {
+      this.playSoftBell(now + 0.7 + i * 0.1, 0.05);
     }
   }
 
-  /** Play victory sound */
-  playVictory(): void {
-    if (!this.isMuted && this.victorySound) {
-      this.victorySound.play();
-    }
+  /** Helper: Play a soft sleigh bell */
+  private playSoftBell(startTime: number, volume: number): void {
+    if (!this.audioContext || !this.masterGain) return;
+
+    const freq = 1800 + Math.random() * 400;
+    const osc = this.audioContext.createOscillator();
+    const gain = this.audioContext.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.12);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(startTime);
+    osc.stop(startTime + 0.15);
+  }
+
+  /** Helper: Play a warm Christmas chime */
+  private playWarmChime(startTime: number, volume: number): void {
+    if (!this.audioContext || !this.masterGain) return;
+
+    // Warm major chord frequencies
+    const freqs = [392, 494, 587]; // G4, B4, D5
+
+    freqs.forEach((freq, i) => {
+      const osc = this.audioContext!.createOscillator();
+      const gain = this.audioContext!.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+
+      const delay = i * 0.03;
+      gain.gain.setValueAtTime(0, startTime + delay);
+      gain.gain.linearRampToValueAtTime(volume, startTime + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + delay + 0.3);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain!);
+
+      osc.start(startTime + delay);
+      osc.stop(startTime + delay + 0.35);
+    });
   }
 }

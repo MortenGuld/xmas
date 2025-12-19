@@ -18,7 +18,7 @@ function getInitials(name: string): string {
 export class GameState {
   private leaders: Leader[] = [];
   private hatsPlaced: number = 0;
-  private isMuted: boolean = true;
+  private isMuted: boolean = false;
   private hasInteracted: boolean = false;
   private config: GameConfig;
   private onChangeCallbacks: Array<(state: GameStateData) => void> = [];

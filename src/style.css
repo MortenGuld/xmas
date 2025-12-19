@@ -669,18 +669,68 @@ h1 {
 }
 
 .overlay-message {
-  font-size: clamp(1rem, 3vw, 1.3rem);
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
   line-height: 1.8;
   color: var(--color-snow);
-  margin-bottom: 1rem;
-  opacity: 0.9;
+  margin-bottom: 0.75rem;
+  opacity: 0.95;
+}
+
+.overlay-submessage {
+  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+  line-height: 1.7;
+  color: var(--color-snow);
+  margin-bottom: 1.5rem;
+  opacity: 0.85;
+}
+
+.vibe-text {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 1.2em;
+  letter-spacing: 0.1em;
+  animation: vibeGradient 3s ease infinite;
+  text-shadow: none;
+}
+
+@keyframes vibeGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.vibe-hint {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.9em;
+  opacity: 0.8;
+  color: #a8e6cf;
 }
 
 .overlay-signature {
   font-style: italic;
   color: var(--color-gold);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   font-size: 1.1rem;
+}
+
+.overlay-footer {
+  margin-top: 1.5rem;
+}
+
+.retro-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(84, 160, 255, 0.2));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
 }
 
 #play-again-btn {

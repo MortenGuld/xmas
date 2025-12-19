@@ -86,16 +86,45 @@ export class OrnamentManager {
   init(leaders: Leader[]): void {
     this.clear();
 
-    const centerX = this.bounds.width / 2;
-    const centerY = this.bounds.height / 2;
-    const radius = Math.min(this.bounds.width, this.bounds.height) * 0.32;
+    // Calculate grid layout to avoid overlap
+    const ornamentSize = 120; // Approximate ornament size
+    const minSpacing = 140; // Minimum space between ornament centers
+    const padding = 100;
+
+    const availableWidth = this.bounds.width - padding * 2;
+    const availableHeight = this.bounds.height - padding * 2;
+
+    // Calculate grid dimensions
+    const cols = Math.max(3, Math.min(5, Math.floor(availableWidth / minSpacing)));
+    const rows = Math.ceil(leaders.length / cols);
+
+    // Calculate actual spacing
+    const spacingX = availableWidth / cols;
+    const spacingY = Math.min(availableHeight / rows, minSpacing * 1.2);
+
+    // Center the grid vertically
+    const gridHeight = (rows - 1) * spacingY + ornamentSize;
+    const startY = Math.max(padding, (this.bounds.height - gridHeight) / 2);
 
     leaders.forEach((leader, index) => {
-      const angle = (index / leaders.length) * Math.PI * 2 - Math.PI / 2;
-      const x = centerX + Math.cos(angle) * radius;
-      const y = centerY + Math.sin(angle) * radius * 0.7 + 20;
+      const col = index % cols;
+      const row = Math.floor(index / cols);
 
-      this.createOrnament(leader, x, y, index);
+      // Offset odd rows for visual interest
+      const rowOffset = row % 2 === 1 ? spacingX * 0.3 : 0;
+
+      // Add some randomness but keep within bounds
+      const randomX = (Math.random() - 0.5) * 30;
+      const randomY = (Math.random() - 0.5) * 20;
+
+      const x = padding + col * spacingX + spacingX / 2 - ornamentSize / 2 + rowOffset + randomX;
+      const y = startY + row * spacingY + randomY;
+
+      // Clamp to ensure visibility
+      const clampedX = Math.max(padding, Math.min(this.bounds.width - ornamentSize - padding, x));
+      const clampedY = Math.max(padding, Math.min(this.bounds.height - ornamentSize - padding, y));
+
+      this.createOrnament(leader, clampedX, clampedY, index);
     });
   }
 
@@ -217,6 +246,26 @@ export class OrnamentManager {
     // Apply velocity
     ornament.x += ornament.vx;
     ornament.y += ornament.vy;
+
+    // Collision avoidance with other ornaments
+    const minDistance = 110; // Minimum distance between ornament centers
+    for (const other of this.ornaments.values()) {
+      if (other.id === ornament.id) continue;
+
+      const dx = ornament.x - other.x;
+      const dy = ornament.y - other.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < minDistance && distance > 0) {
+        // Push ornaments apart
+        const pushStrength = (minDistance - distance) * 0.02;
+        const nx = dx / distance;
+        const ny = dy / distance;
+
+        ornament.vx += nx * pushStrength;
+        ornament.vy += ny * pushStrength;
+      }
+    }
 
     // Bobbing motion
     const bobOffset = Math.sin(now * 0.001 * ornament.bobSpeed + ornament.bobPhase) * 8;
